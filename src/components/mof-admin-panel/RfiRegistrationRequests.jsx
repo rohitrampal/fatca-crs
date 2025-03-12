@@ -228,6 +228,7 @@ export default function RfiRegistrationRequests() {
             }
         });
         setRfiRequest(res.data);
+        console.log(res.data);
     };
 
     useEffect(() => {
