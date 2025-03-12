@@ -31,6 +31,7 @@ export default function Login() {
                 email: email,
                 token: response.data?.token,
                 id: response.data?.id,
+                role:response.data?.role
             }
             dispatch(login(payload))
             navigate('/mof');

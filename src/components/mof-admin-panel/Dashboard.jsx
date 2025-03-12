@@ -1,19 +1,41 @@
-import axios from "axios";
-import { useState, useEffect } from "react";
+import React, { useEffect, useState } from 'react'
+import registerCharts from './charts/registerCharts'
+import DoughnutChart from './charts/DoughnutChart';
+import axios from 'axios';
+registerCharts();
 
 export default function Dashboard() {
-  const [data, setData] = useState([]);
-  const [filteredData, setFilteredData] = useState([]);
-  const [filter, setFilter] = useState("all");
-  const [status,setStatus] = useState('all');
-  const [institution,setInstitution] = useState('all');
-  const [institutionData,setInstitutionData] = useState([]);
+  // for rfi reports 
+  const [rfiReportYearFilter, setRfiReportYearFilter] = useState('2025');
+  const [rfiReportYearData, setRfiReportYearData] = useState([]);
+  const [rfiReportLabelsData,setRfiReportLabelsData] = useState([]);
+
+  // for rfi registrations
+  const [rfiYearFilter, setRfiYearFilter] = useState('2025');
+  const [rfiYearData, setRfiYearData] = useState([]);
+  const [rfiLabelsData,setRfiLabelsData] = useState([]);
 
 
-  const fetchData = async () => {
-    try {
-      const response = await axios.get(
-        `http://192.168.1.84:8080/api/reports/get-all-rfi-reports`,
+  // logic for RFI Reports 
+  const rfiReportsLabels = rfiReportLabelsData;
+  const rfiReportsDataValues = rfiReportYearData;
+  const backgroundColor = [
+    "rgb(255,0,0)",
+    "rgb(255,128,0)",
+    "rgb(255,255,0)",
+    "rgb(75, 192, 192)",
+    "rgb(153, 102, 255)",
+    "rgb(255, 210, 128)",
+    "rgb(77,53,47)",
+    "rgb(0,255,255)",
+    "rgb(255,0,128)",
+    "rgb(255,0,255)",
+    "rgb(0,128,255)",
+    "rgb(0,255,0)",
+  ]
+  const rfiReportsTitleText = 'Rfi Reports';
+  const fetchRfiReportData = async()=>{
+    const response = await axios.post(`http://192.168.1.84:8080/api/analytics/rfi-reports-data?year=${rfiReportYearFilter}`,{},
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -21,134 +43,94 @@ export default function Dashboard() {
           },
         }
       );
-      console.log("Data from backend --->", response.data);
-      setData(response.data);
-      setFilteredData(response.data);
-      setInstitutionData(response.data);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  };
-  useEffect(() => {
-    // Fetch data from the backend API
-    fetchData();
-  }, []);
-
-  const applyFilters = (filterData,filterType,statusType)=>{
-    return filterData.filter((item)=>{
-      const typeMatch = filterType ==='all' || item.reportType === filterType;
-      const statusMatch = statusType ==='all' || item.status === statusType;
-      return typeMatch && statusMatch;
-    })
+    console.log('data for rfi reports--->',response.data);
+    setRfiReportLabelsData(Object.keys(response.data));
+    setRfiReportYearData(Object.values(response.data));
+  }
+  useEffect(()=>{
+    fetchRfiReportData();
+  },[rfiReportYearFilter])
+  
+  const handleRfiReportYearChange = async(e)=>{
+    const value = e.target.value;
+    setRfiReportYearFilter(value);
+    // const filterData = data.filter((item)=>item.year === value );
+    // setFilteredData(filterData);
   }
 
-  const handleFilterChange = (e) => {
-    const value = e.target.value;
-    setFilter(value);
-    const filteredData = applyFilters(data, value, status);
-    setFilteredData(filteredData);
-    // if (value === "all") {
-    //   // const filtered = data.filter((item) =>  (item.status === 'REJECTEDBYMINISTRY' || item.status ==='PENDING' || item.status === 'APPROVEDBYMINISTRY' ) );
-    //   // setFilteredData(filtered);
-    //   setFilteredData(data);
-    // } else {
-    //   const filtered = data.filter((item) => (item.reportType === value  ));
-    //   setFilteredData(filtered);
-    // }
-  };
-  const handleStatusChange = (e)=>{
-    const value = e.target.value;
-    setStatus(value);
-    const filteredData = applyFilters(data, filter, value);
-    setFilteredData(filteredData);
-  }
-  const handleInstitution =(e)=>{
-    const value = e.target.value;
-    setInstitution(value);
-    const filteredData = data.filter((item)=>(item.regulatoryAuthority === value && item.status ==='APPROVEDBYMINISTRY' ));
-    setInstitutionData(filteredData);
-  }
 
-  return (
-    <div className="p-4">
-      <h1 className="text-2xl mb-4 text-center font-semibold bg-slate-400 rounded-lg p-2">All Reports </h1>
-      <div className="mb-4 flex gap-x-4">
-        <div>
-          <label className="mr-2">Filter by:</label>
-          <select
-            value={filter}
-            onChange={handleFilterChange}
-            className="p-2 border rounded"
-          >
-            <option value="all">All</option>
-            <option value="FATCA">FATCA</option>
-            <option value="CRS">CRS</option>
-          </select>
-        </div>
-        <div>
-          <label className="mr-2">Status: </label>
-          <select
-            value={status}
-            onChange={handleStatusChange}
-            className="p-2 border rounded"
-          >
-            <option value="all">All</option>
-            <option value="APPROVEDBYRFI">Pending</option>
-            <option value="APPROVEDBYMINISTRY">Approved</option>
-            <option value="REJECTEDBYMINISTRY">Reject</option>
-          </select>
-        </div>
-      </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-1 lg:grid-cols-1 ">
-        {filteredData.length>0 ? (
-          filteredData.map((report) => (
-            <div key={report.reportId} className="p-4 border rounded-lg shadow-md shadow-slate-500 ">
-              <p className="text-lg"><strong>RFI Institution Name:</strong> {report.institution.name}</p>
-              <p><strong>Regulatory Authority:</strong> {report.regulatoryAuthority}</p>
-              <p><strong>Report Id:</strong> {report.reportId}</p>
-              <p><strong>Institution Classification:</strong> {report.institutionClassification}</p>
-              {report.status ==="APPROVEDBYRFI" ? (<p><strong>Status:</strong> PENDING</p>):(<p><strong>Status:</strong> {report.status}</p>)}
-              <p><strong>Creation Date:</strong>{' '}{report.registerDates.slice(0,10)}</p>
-              <span className="text-sm text-gray-500"><strong>Report Type:</strong> {report.reportType}</span>
-            </div>
-          ))):(
-            <p>No more Requests are Available...</p>
-            )
+  // logic for RFI Registrations
+  const rfiLabels = rfiLabelsData;
+  const rfiDataValues = rfiYearData;
+  
+  const rfititleText = 'Rfi Registrations';
+  const fetchRfiData = async()=>{
+    const response = await axios.post(`http://192.168.1.84:8080/api/analytics/rfi-registration-data?year=${rfiYearFilter}`,{},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
         }
-      </div>
-      <div>
-        <h2 className="text-2xl text-center font-semibold mb-4 mt-4 bg-slate-400 rounded-lg p-2">Reports Sent </h2>
-        <div className="mb-4">
-          <label className="mr-2">Global Regulator:</label>
-          <select 
-          value={institution}
-          onChange={handleInstitution}
-          className="p-2 border rounded"
-          >
-            <option value="IRS">IRS</option>
-            <option value="OECD">OECD</option>
-          </select>
-        </div>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-1 lg:grid-cols-1">
-          {institutionData.length>0 ? (
-            institutionData.map((report) => (
-              <div key={report.reportId} className="p-4 border rounded-lg shadow-md shadow-slate-500">
-                <p className="text-lg"><strong>RFI Institution Name:</strong> {report.institution.name}</p>
-                <p><strong>Regulatory Authority:</strong> {report.regulatoryAuthority}</p>
-                <p><strong>Report Id:</strong> {report.reportId}</p>
-                <p><strong>Institution Classification:</strong> {report.institutionClassification}</p>
-                <p><strong>Status:</strong> {report.status}</p>
-                <p><strong>Creation Date:</strong>{' '}{report.registerDates.slice(0,10)}</p>
-                <span className="text-sm text-gray-500"><strong>Report Type: </strong>{report.reportType}</span>
-              </div>
-            ))):(
-              <p>No Requests are Sent...</p>
-              )
-          }
-        </div>
+      );
+    console.log('data for rfi registration--->',response.data);
+    setRfiLabelsData(Object.keys(response.data));
+    setRfiYearData(Object.values(response.data));
+  }
+  useEffect(()=>{
+    fetchRfiData();
+  },[rfiYearFilter])
+  
+  const handleRfiYearChange = async(e)=>{
+    const value = e.target.value;
+    setRfiYearFilter(value);
+    // const filterData = data.filter((item)=>item.year === value );
+    // setFilteredData(filterData);
+  }
+  return (
+    <>
+    {/* rfi reports  chart */}
+    <div className='container  '>
+    <h1 className='text-center text-2xl font-semibold p-2 rounded-lg bg-slate-400'>RFI Report Analysis</h1>
+      <p className='p-2'>
+        <label>Year: </label>
+        <select 
+        value={rfiReportYearFilter} 
+        onChange={handleRfiReportYearChange} 
+        className="p-2 border rounded"
+        >
+          <option value="2025">2025</option>
+          <option value="2024">2024</option>
+          <option value="2023">2023</option>
+          <option value="2022">2022</option>
+        </select>
+      </p>
+      <div className='graph max-w-[40%] h-36 lg:h-full sm:max-w-[40%] sm:h-36 md:max-w-[60%]  lg:max-w-[70%] w-[100%] shadow-lg p-3 '>
+        <DoughnutChart labels={rfiReportsLabels} dataValues={rfiReportsDataValues} backgroundColor={backgroundColor} titleText={rfiReportsTitleText}/>
       </div>
     </div>
-  );
+    {/* rfi registration chart*/}
+    <div className='mt-10  '>
+      <h2 className='text-center text-2xl font-semibold p-2 rounded-lg bg-slate-400'>RFI Registration Analysis</h2>
+      <p className='p-2'>
+        <label>Year: </label>
+        <select 
+        value={rfiYearFilter} 
+        onChange={handleRfiYearChange} 
+        className="p-2 border rounded"
+        >
+          <option value="2025">2025</option>
+          <option value="2024">2024</option>
+          <option value="2023">2023</option>
+          <option value="2022">2022</option>
+        </select>
+      </p>
+      <div className='graph max-w-[40%] h-36 lg:h-full sm:max-w-[40%] md:max-w-[60%] lg:max-w-[70%] w-[100%] shadow-lg p-3 '>
+        <DoughnutChart labels={rfiLabels} dataValues={rfiDataValues} backgroundColor={backgroundColor} titleText={rfititleText}/>
+      </div>
+    </div>
+    </>
+  )
 }
 

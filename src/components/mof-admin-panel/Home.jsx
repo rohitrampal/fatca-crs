@@ -141,19 +141,22 @@ export default function Home() {
                         <nav className="">
                             <ul className="flex flex-col gap-y-5">
                                 <li className="flex hover:bg-slate-800 hover:rounded-lg p-1">
-                                    <CiHome className="mt-1 mr-1" /> <Link to="/mof">Reports History</Link>
+                                    <TbBrandGoogleAnalytics className="mt-1 mr-1" /> <Link to="/mof">Dashboard</Link>
+                                </li>
+                                <li className="flex hover:bg-slate-800 hover:rounded-lg p-1">
+                                    <CiHome className="mt-1 mr-1" /> <Link to="/mof/reports-history">Reports History</Link>
                                 </li>
                                 <li className="flex hover:bg-slate-800 hover:rounded-lg p-1">
                                     <ImProfile className="mt-1 mr-1" /> <Link to="/mof/profile">Profile</Link>
-                                </li>
-                                <li className="flex hover:bg-slate-800 hover:rounded-lg p-1">
-                                    <TbBrandGoogleAnalytics className="mt-1 mr-1" /> <Link to="/mof/analytics">Analytics</Link>
                                 </li>
                                 <li className="flex hover:bg-slate-800 hover:rounded-lg p-1">
                                     <FaCodePullRequest className="mt-1 mr-1" /> <Link to="/mof/report-requests">Reports Requests</Link>
                                 </li>
                                 <li className="flex hover:bg-slate-800 hover:rounded-lg p-1">
                                     <TbHexagonLetterRFilled className="mt-1 mr-1" /> <Link to="/mof/rfi-requests">RFI Registration</Link>
+                                </li>
+                                <li className="flex hover:bg-slate-800 hover:rounded-lg p-1">
+                                    <TbHexagonLetterRFilled className="mt-1 mr-1" /> <Link to="/mof/registered-rfi">Registered RFI</Link>
                                 </li>
                                 {user ? (
                                     <li className="flex hover:bg-slate-800 hover:rounded-lg p-1">

@@ -47,7 +47,8 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 
 import Login from './components/mof-admin-panel/Login'
 import Signup from './components/mof-admin-panel/Signup'
-import Analytics from './components/mof-admin-panel/Analytics'
+import Analytics from './components/mof-admin-panel/Dashboard'
+import RegisteredRfi from './components/mof-admin-panel/RegisteredRfi'
 import RfiRegistrationRequests from './components/mof-admin-panel/RfiRegistrationRequests'
 import ReportRequests from './components/mof-admin-panel/ReportRequests'
 import Dashboard from './components/mof-admin-panel/Dashboard'
@@ -88,9 +89,11 @@ function App() {
             <Route path="/mof/login" element={<Login />} />
             <Route path="/mof/signup" element={<Signup />} />
             <Route path="/mof" element={<ProtectedRoute element={<Dashboard />} />} />
-            <Route path="/mof/report-requests" element={<ProtectedRoute element={<ReportRequests />} />} />
             <Route path="/mof/profile" element={<ProtectedRoute element={<Profile />} />} />
             <Route path="/mof/analytics" element={<ProtectedRoute element={<Analytics />} />} />
+            <Route path="/mof/registered-rfi" element={<ProtectedRoute element={<RegisteredRfi />} />} />
+            <Route path="/mof/reports-history" element={<ProtectedRoute element={<ReportRequests />} />} />
+            <Route path="/mof/report-requests" element={<ProtectedRoute element={<ReportRequests />} />} />
             <Route path="/mof/rfi-requests" element={<ProtectedRoute element={<RfiRegistrationRequests />} />} />
             <Route path="*" element={<Navigate to={IsAuthenticated() ? "/mof" : "/mof/login"} />} />
           </Routes>
